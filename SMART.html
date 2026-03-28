@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Smart City Ultimate Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+
+.light { background: #f1f5f9; color: black; }
+
+.topbar {
+  background: #020617;
+  padding: 10px;
+  font-size: 18px;
+}
+
+.card {
+  background: #1e293b;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  display: inline-block;
+  width: 150px;
+}
+
+button {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #38bdf8;
+  cursor: pointer;
+}
+
+.map {
+  margin-top: 20px;
+}
+
+.zone {
+  display: inline-block;
+  margin: 10px;
+  padding: 15px;
+  background: #334155;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.zone:hover {
+  background: #475569;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">🌆 Smart City Ultimate Control</div>
+
+<h2>👤 Enter Name</h2>
+<input id="name"><button onclick="start()">Start</button>
+
+<div id="app" style="display:none;">
+
+<h3 id="user"></h3>
+
+<div>
+  <div class="card">⚡ <span id="energy">100</span></div>
+  <div class="card">💧 <span id="water">50</span></div>
+  <div class="card">♻ <span id="waste">30</span></div>
+  <div class="card">🎁 <span id="points">0</span></div>
+</div>
+
+<button onclick="earn()">Use Dustbin</button> <button onclick="redeem()">Redeem</button> <button onclick="toggleTheme()">Toggle Theme</button>
+
+<h2>🗺️ City Map</h2>
+<div class="map">
+  <div class="zone" onclick="solar()">☀ Solar Zone</div>
+  <div class="zone" onclick="wind()">🌬 Wind Zone</div>
+  <div class="zone" onclick="waterSys()">💧 Water System</div>
+</div>
+
+<h2>📊 Energy Graph</h2>
+<canvas id="chart"></canvas>
+
+<h2>🤖 AI Suggestions</h2>
+<p id="ai"></p>
+
+<h2>🏆 Leaderboard</h2>
+<ul id="board"></ul>
+
+<h2>🎯 Achievements</h2>
+<p id="ach"></p>
+
+</div>
+
+<script>
+let user, energy=100, water=50, waste=30, points=0;
+
+function start(){
+  user = document.getElementById("name").value;
+  document.getElementById("user").innerText="Welcome "+user;
+  document.getElementById("app").style.display="block";
+  updateBoard();
+}
+
+function update(){
+  document.getElementById("energy").innerText=energy;
+  document.getElementById("water").innerText=water;
+  document.getElementById("waste").innerText=waste;
+  document.getElementById("points").innerText=points;
+  localStorage.setItem(user,JSON.stringify({points}));
+  aiSuggest();
+  checkAchievements();
+}
+
+function earn(){ points+=10; update(); }
+
+function redeem(){
+  if(points>=50){ points-=50; alert("Discount Applied"); }
+  else alert("Not enough points");
+  update();
+}
+
+function solar(){ energy+=15; update(); addGraph(); }
+function wind(){ energy+=10; update(); addGraph(); }
+function waterSys(){ water+=10; update(); }
+
+function toggleTheme(){ document.body.classList.toggle("light"); }
+
+function updateBoard(){
+  let ul=document.getElementById("board"); ul.innerHTML="";
+  for(let k in localStorage){
+    let d=JSON.parse(localStorage.getItem(k));
+    let li=document.createElement("li");
+    li.innerText=k+" - "+d.points+" pts";
+    ul.appendChild(li);
+  }
+}
+
+function aiSuggest(){
+  let text="City running efficiently";
+  if(energy<80) text="⚠ Increase solar usage";
+  if(points>50) text="⭐ Citizen doing great!";
+  document.getElementById("ai").innerText=text;
+}
+
+function checkAchievements(){
+  let ach="";
+  if(points>=50) ach="🏅 Eco Saver";
+  if(points>=100) ach="🏆 Green Champion";
+  document.getElementById("ach").innerText=ach;
+}
+
+let ctx=document.getElementById("chart").getContext("2d");
+let chart=new Chart(ctx,{
+ type:"line",
+ data:{labels:["Start"],datasets:[{data:[100]}]}
+});
+
+function addGraph(){
+ chart.data.labels.push("");
+ chart.data.datasets[0].data.push(energy);
+ chart.update();
+}
+</script>
+
+</body>
+</html>
